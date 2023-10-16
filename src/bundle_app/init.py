@@ -16,7 +16,7 @@ def init_dev_dir(app_name):
     template_dir = os.path.join(package_dirs[0], 'templates')
     os.mkdir(work_dir)
     env = Environment(
-        loader=PackageLoader('bundle_up', 'templates'),
+        loader=PackageLoader('bundle_app', 'templates'),
     )
     template = env.get_template('info.jinja2')
     with open(os.path.join(work_dir, 'info.toml'), 'w') as info_toml:

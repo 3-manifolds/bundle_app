@@ -8,7 +8,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bundle-up"
+name = "bundle-app"
 dynamic = ["version"]
 description = "Constructs a macOS App bundle with a python executable."
 readme = {file = "README.rst", content-type = "text/x-rst"}
@@ -34,11 +34,11 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/3-manifolds/bundle_up"
-"Bug Tracker" = "https://github.com/3-manifolds/bundle_up/issues"
+"Homepage" = "https://github.com/3-manifolds/bundle_app"
+"Bug Tracker" = "https://github.com/3-manifolds/bundle_app/issues"
 
 [tool.setuptools.dynamic]
-version = {attr = "bundle_up.__version__"}
+version = {attr = "bundle_app.__version__"}
 
 [tool.setuptools.package-data]
-bundle_up = ["templates/*"]
+bundle_app = ["templates/*"]
