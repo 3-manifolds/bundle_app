@@ -41,4 +41,4 @@ classifiers = [
 version = {attr = "bundle_app.__version__"}
 
 [tool.setuptools.package-data]
-bundle_app = ["templates/*"]
+bundle_app = ["templates/*", "templates/main_ex/*"]
