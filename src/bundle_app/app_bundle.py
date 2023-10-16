@@ -1,11 +1,14 @@
 import os
+import sys
 import shutil
 import plistlib
 import toml
 import subprocess
+import json
+from urllib.request import urlopen, urlretrieve
 
 class AppBundle:
-
+    frameworks_url = 'https://api.github.com/repos/3-manifolds/frameworks/releases/latest'
     python_link = '../Frameworks/Python.framework/Versions/Current/bin/python3'
 
     def __init__(self):
@@ -28,11 +31,30 @@ class AppBundle:
             A python script named main.py which runs the app;
             A tarball (or a symlink to one) named Frameworks.tgz.
 	"""
+        # Raises an exception if the app exists.
+        os.mkdir(self.bundle)
+        # Build the main executable (if necessary).
         os.chdir('main_ex')
         subprocess.run(['make'])
         os.chdir(os.path.pardir)
-        # Raises an exception if the app exists.
-        os.mkdir(self.bundle)
+        # Download the frameworks (if necessary).
+        if not os.path.exists('Frameworks.tgz'):
+            with urlopen(self.frameworks_url) as json_data:
+                release_info = json.load(json_data)
+            for asset in release_info['assets']:
+                filename = asset['name']
+                urlretrieve(asset['browser_download_url'], filename)
+                if filename.endswith('.sha1'):
+                    hash_file = filename
+                elif filename.endswith('.tgz'):
+                    tar_file = filename
+            result = subprocess.run(['shasum', '-c', hash_file],
+                        capture_output=True)
+            if result.returncode:
+                print('Framework download failed')
+                sys.exit(1)
+            os.unlink(hash_file)
+            os.rename(tar_file, 'Frameworks.tgz')
         contents = os.path.join(self.bundle, 'Contents')
         macos = os.path.join(contents, 'MacOS')
         resources = os.path.join(contents, 'Resources')
