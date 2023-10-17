@@ -23,15 +23,15 @@ class AppBundle:
         """Construct a macOS Application bundle.
 
         The info.toml file provides configuration information.
-	This assumes that the current working directory contains:
+        This assumes that the current working directory contains:
             A configuration file info.toml.
             A directory main_ex containing the main executable;
             An icon file named as specified in info.toml;
             An sdef file named as specified in info.toml;
             A python script named main.py which runs the app;
             A tarball (or a symlink to one) named Frameworks.tgz.
-	"""
-        # Raises an exception if the app exists.
+        """
+        # Raises an exception if the bundle exists.
         os.mkdir(self.bundle)
         # Build the main executable (if necessary).
         os.chdir('main_ex')
@@ -73,3 +73,20 @@ class AppBundle:
         subprocess.run(['tar', 'xz', '-C', contents,
              '-f', 'Frameworks.tgz'])
 
+    def add_packages(self):
+        if not os.path.exists('requirements.txt'):
+            print('The requirements.txt file was not found.')
+            sys.exit(1)
+        bundle_name = self.app_name + '.app'
+        if not os.path.exists(bundle_name):
+            print(bundle_name, 'was not found')
+            sys.exit(1)
+        lib_dir = os.path.join(bundle_name, 'Contents', 'Frameworks',
+            'Python.framework', 'Versions', 'Current', 'lib')
+        package_dir = None
+        for file in os.listdir(lib_dir):
+            package_dir = os.path.join(lib_dir, file, 'site-packages')
+            if os.path.exists(package_dir):
+                break
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r',
+            'requirements.txt', '--no-user', '--target', package_dir])
