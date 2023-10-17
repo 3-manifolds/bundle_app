@@ -23,6 +23,7 @@ maintainers = [
     { name="Matthias Görner", email="enischte@gmail.com" },
 ]
 requires-python = ">=3.10"
+dependencies = ["toml>=0.10.0"]
 keywords = ["files", "metadata"]
 classifiers = [
     "Development Status :: 3 - Alpha",
