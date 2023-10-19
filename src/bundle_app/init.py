@@ -31,6 +31,8 @@ def init_dev_dir(app_name):
     shutil.copytree(main_ex_path, os.path.join(work_dir, 'main_ex'))
     py_main_path = os.path.join(template_dir, 'main.py')
     shutil.copy(py_main_path, os.path.join(work_dir, 'main.py'))
+    py_main_path = os.path.join(template_dir, 'superfluous.txt')
+    shutil.copy(py_main_path, os.path.join(work_dir, 'superfluous.txt'))
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

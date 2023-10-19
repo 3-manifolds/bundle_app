@@ -68,7 +68,7 @@ class Zipper:
         with open('superfluous.txt') as text_file:
             names = [line.strip()
                         for line in text_file.readlines()
-                        if line[0] != '#']
+                        if line and line[0] != '#']
         for name in names:
             self.remove_module(name)
         # Some special cases
