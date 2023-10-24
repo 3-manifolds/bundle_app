@@ -27,6 +27,7 @@ class Zipper:
         self.stdlib = os.listdir(self.lib_dir)
         self.lib_dynload = os.path.join(self.lib_dir, 'lib-dynload')
         self.package_dir = os.path.join(self.lib_dir, 'site-packages')
+        self.frameworks = os.path.join(self.bundle, 'Contents', 'Frameworks')
         
     def check_module(self, name):
         module_path = os.path.join(self.lib_dir, name)
@@ -80,11 +81,23 @@ class Zipper:
             self.purge_extensions('ssl')
             shutil.rmtree(os.path.join(self.bundle, 'Contents',
                 'Frameworks', 'OpenSSL.framework'))
-        # Clean the bin directory:
+        # Clean the bin and include directories:
         bin_dir = os.path.join(self.prefix, 'bin')
         for bin_file in os.listdir(bin_dir):
             if not bin_file.startswith('python'):
                 os.unlink(os.path.join(bin_dir, bin_file))
+        shutil.rmtree(os.path.join(self.package_dir, 'bin'))
+        for framework in os.listdir(self.frameworks):
+            if framework == 'Python.framework':
+                continue
+            bin_dir = os.path.join(framework, 'Versions', 'Current',
+                                       'bin')
+            if os.path.exists(bin_dir):
+                shutil.rmtree(bin_dir)
+            include_dir = os.path.join(framework, 'Versions', 'Current',
+                                       'include')
+            if os.path.exists(include_dir):
+                shutil.rmtree(include_dir)
         # Remove pip
         pip_dirs = glob.glob(os.path.join(self.package_dir, 'pip*'))
         for dir in pip_dirs:
