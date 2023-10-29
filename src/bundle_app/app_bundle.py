@@ -18,6 +18,7 @@ class AppBundle:
         self.bundle = self.app_name + '.app'
         self.icon_file = info['CFBundleIconFile']
         self.sdef_file = info['OSAScriptingDefinition']
+        self.python_version = f'{sys.version_info.major}.{sys.version_info.minor}'
 
     def create_bundle_structure(self):
         """Construct a macOS Application bundle.
@@ -38,11 +39,16 @@ class AppBundle:
         subprocess.run(['make'])
         os.chdir(os.path.pardir)
         # Download the frameworks (if necessary).
-        if not os.path.exists('Frameworks.tgz'):
+        tarball_base = f'Frameworks-{self.python_version}'
+        tarball = tarball_base + '.tgz'
+        if not os.path.exists(tarball):
             with urlopen(self.frameworks_url) as json_data:
                 release_info = json.load(json_data)
             for asset in release_info['assets']:
                 filename = asset['name']
+                base, ext = os.path.splitext(filename)
+                if base != tarball_base:
+                    continue
                 urlretrieve(asset['browser_download_url'], filename)
                 if filename.endswith('.sha1'):
                     hash_file = filename
@@ -54,7 +60,6 @@ class AppBundle:
                 print('Framework download failed')
                 sys.exit(1)
             os.unlink(hash_file)
-            os.rename(tar_file, 'Frameworks.tgz')
         contents = os.path.join(self.bundle, 'Contents')
         macos = os.path.join(contents, 'MacOS')
         resources = os.path.join(contents, 'Resources')
@@ -70,8 +75,7 @@ class AppBundle:
         symlink_path = os.path.join(macos, 'Python')
         os.symlink(self.python_link, symlink_path)
         shutil.copy('main.py', resources)
-        subprocess.run(['tar', 'xz', '-C', contents,
-             '-f', 'Frameworks.tgz'])
+        subprocess.run(['tar', 'xz', '-C', contents, '-f', tarball]) 
 
     def add_packages(self):
         if not os.path.exists('requirements.txt'):
