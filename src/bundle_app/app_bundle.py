@@ -17,7 +17,7 @@ class AppBundle:
         self.app_name = info['CFBundleDisplayName']
         self.bundle = self.app_name + '.app'
         self.icon_file = info['CFBundleIconFile']
-        self.sdef_file = info['OSAScriptingDefinition']
+        self.sdef_file = info.get('OSAScriptingDefinition', '')
         self.python_version = f'{sys.version_info.major}.{sys.version_info.minor}'
 
     def create_bundle_structure(self):
@@ -28,7 +28,6 @@ class AppBundle:
             A configuration file info.toml.
             A directory main_ex containing the main executable;
             An icon file named as specified in info.toml;
-            An sdef file named as specified in info.toml;
             A python script named main.py which runs the app;
             A tarball (or a symlink to one) named Frameworks.tgz.
         """
@@ -66,7 +65,8 @@ class AppBundle:
         for subdir in (contents, macos, resources):
             os.makedirs(subdir, exist_ok=True)
         shutil.copy(self.icon_file, resources)
-        shutil.copy(self.sdef_file, resources)
+        if self.sdef_file:
+            shutil.copy(self.sdef_file, resources)
         main_ex_path = os.path.join(macos, self.app_name)
         shutil.copy('main_ex/AppMain', main_ex_path)
         plist_path = os.path.join(contents, 'Info.plist')
@@ -92,5 +92,7 @@ class AppBundle:
             package_dir = os.path.join(lib_dir, file, 'site-packages')
             if os.path.exists(package_dir):
                 break
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r',
-            'requirements.txt', '--no-user', '--target', package_dir])
+        subprocess.check_call(
+            [sys.executable, '-m', 'pip', 'install', '-r',
+             'requirements.txt', '--upgrade', '--force-reinstall',
+             '--no-user', '--target', package_dir])
